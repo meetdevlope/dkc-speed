@@ -1,0 +1,179 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "components/Button";
+import Dialog from "components/Dialog";
+import Icon from "components/icon/Icon";
+import { useToggle } from "hooks/useToggle";
+import React from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
+import WardrobeProductDropdown from "../wardrobe-items/WardrobeProductDropdown";
+import FamilyMembersDropdown from "../FamilyMembersDropdown";
+import { Input } from "components/Input";
+import DatePicker from "components/datepicker/DatePicker";
+import TextArea from "components/TextArea";
+import WardrobeImageUploader from "../wardrobe-items/WardrobeImageUploader";
+import { createEvent } from "../../action";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+
+const addEventSchema = z.object({
+  productId: z.object({
+    label: z.string(),
+    value: z.string(),
+  }),
+  familyMember: z.object({
+    label: z.string(),
+    value: z.string(),
+  }),
+  eventTitle: z.string().min(1, "Event title is required"),
+  description: z.string().optional(),
+  journalDate: z.date(),
+  photos: z.array(z.string()).optional(),
+});
+
+type AddEventFields = z.infer<typeof addEventSchema>;
+
+interface AddEventProps {
+  token: string;
+}
+
+const AddEvent: React.FC<AddEventProps> = ({ token }) => {
+  const { isOpen, open, close } = useToggle();
+  const route = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<AddEventFields>({
+    resolver: zodResolver(addEventSchema),
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data: AddEventFields) =>
+      createEvent(token, {
+        eventTitle: data?.eventTitle,
+        familyMember: data?.familyMember?.value,
+        productId: data?.productId?.value,
+        photos: data?.photos || [],
+        description: data?.description || "",
+        journalDate: data?.journalDate?.toISOString(),
+      }),
+    onSuccess: () => {
+      route.refresh();
+      reset();
+      close();
+    },
+    onError: (error) => {
+      console.error("Failed to create event:", error);
+    },
+  });
+
+  const onSubmit: SubmitHandler<AddEventFields> = (data) => {
+    mutation.mutate(data);
+  };
+
+  return (
+    <div>
+      <Button
+        size="md"
+        startIcon={<Icon name="plus" className="stroke-2" iconType="stroke" />}
+        variant="outline"
+        onClick={open}
+      >
+        Add Journal
+      </Button>
+      <Dialog isOpen={isOpen} onClose={close} title="Add Journal" noClose>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-y-2"
+        >
+          <div className="flex flex-col gap-x-4 gap-y-2 md:flex-row">
+            <Controller
+              name="productId"
+              control={control}
+              render={({ field }) => (
+                <WardrobeProductDropdown
+                  label="Product"
+                  onChange={(selected) => field.onChange(selected)}
+                  selectedOption={field.value}
+                  onBlur={field.onBlur}
+                  error={errors.productId?.message}
+                  isSearchable
+                  isPortal
+                  token={token}
+                />
+              )}
+            />
+            <Controller
+              name="familyMember"
+              control={control}
+              render={({ field }) => (
+                <FamilyMembersDropdown
+                  label="Family Member"
+                  onChange={(selected) => field.onChange(selected)}
+                  selectedOption={field.value}
+                  onBlur={field.onBlur}
+                  error={errors.familyMember?.message}
+                  isSearchable
+                  isPortal
+                  token={token}
+                />
+              )}
+            />
+          </div>
+          <div className="flex flex-col gap-x-4 gap-y-2 md:flex-row [&>*]:w-full">
+            <Input
+              {...register("eventTitle")}
+              error={errors?.eventTitle?.message}
+              label="Event Title"
+            />
+            <Controller
+              name="journalDate"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  label="Journal Date"
+                  selected={field.value}
+                  onChange={field.onChange}
+                  showYearPicker
+                />
+              )}
+            />
+          </div>
+          <Controller
+            name="photos"
+            control={control}
+            render={({ field }) => (
+              <WardrobeImageUploader
+                onImagesChange={field.onChange}
+                initialImages={field.value}
+                error={errors.photos?.message}
+              />
+            )}
+          />
+          <TextArea
+            label="Description (optional)"
+            placeholder="Please add description"
+            {...register("description")}
+            error={Boolean(errors?.description?.message)}
+          />
+          <div className="my-4 flex justify-end gap-x-2">
+            <Button size="md" type="button" onClick={close} variant="outline">
+              Cancel
+            </Button>
+            <Button size="md" type="submit" isLoading={mutation.isPending}>
+              Create Journal
+            </Button>
+          </div>
+        </form>
+      </Dialog>
+    </div>
+  );
+};
+
+export default AddEvent;

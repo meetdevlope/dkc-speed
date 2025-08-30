@@ -1,0 +1,63 @@
+/* body:has(.liItem:hover) {
+  overflow-y: hidden;
+} */
+
+.liItem > .subParent {
+  visibility: hidden;
+  opacity: 0;
+  min-width: 5rem;
+  position: absolute;
+  z-index: 1000;
+  transition: all 0.5s ease;
+  left: 0;
+  right: 0;
+  width: auto;
+  display: none;
+  min-width: 30rem;
+  flex: 1;
+}
+
+.liItem::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 1px;
+  margin-top: -3px;
+  background: rgb(var(--primary1));
+  transition: width 0.2s;
+}
+
+.liItem:hover::after {
+  width: 100%;
+}
+
+.liItem:hover > .subParent,
+.liItem > .subParent:hover {
+  visibility: visible;
+  opacity: 1;
+  display: block;
+  color: black;
+  margin: auto;
+}
+
+.liItem > .subParent li {
+  clear: both;
+  width: 100%;
+}
+
+.liItem > .subParent li {
+  list-style: none;
+}
+
+.link::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 1px;
+  background: #000;
+  transition: width 0.2s;
+}
+
+.link:hover::after {
+  width: 100%;
+}

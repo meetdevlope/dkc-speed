@@ -1,0 +1,42 @@
+[
+  {
+    "label": "Shop Boys",
+    "isParentNav": true,
+    "subNavIds": ["Shop by Age", "Shop by Category"]
+  },
+  {
+    "label": "Shop by Age",
+    "isParentNav": true,
+    "subNavIds": ["0-2 Years", "3-5 Years", "9-12 Years"]
+  },
+  {
+    "label": "Shop by Category",
+    "isParentNav": true,
+    "subNavIds": ["T-Shirts", "Pants"]
+  },
+  {
+    "label": "0-2 Years",
+    "isParentNav": false,
+    "subNavIds": []
+  },
+  {
+    "label": "3-5 Years",
+    "isParentNav": false,
+    "subNavIds": []
+  },
+  {
+    "label": "9-12 Years",
+    "isParentNav": false,
+    "subNavIds": []
+  },
+  {
+    "label": "T-Shirts",
+    "isParentNav": false,
+    "subNavIds": []
+  },
+  {
+    "label": "Pants",
+    "isParentNav": false,
+    "subNavIds": []
+  }
+]
